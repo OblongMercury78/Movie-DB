@@ -1,11 +1,14 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, redirect
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import func
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
-
+@app.route('/home')
+def home():
+    return render_template('home.html')
 class Movies(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(80), unique=True, nullable=False)
@@ -76,6 +79,42 @@ def members():
         movie.reviews = Review.query.filter_by(movie_id=movie.id).all()
 
     return render_template('members.html', movies=all_movies)
+@app.route('/search', methods=['GET'])
+def search():
+    search_query = request.args.get('search_query', '')
 
+    # Perform a case-insensitive search for movies based on the name
+    search_results = (
+        db.session.query(
+            Movies,
+            func.avg(Review.rating).label('avg_rating'),
+            Production.staff_name,
+            Production.role
+        )
+        .join(Review, Movies.id == Review.movie_id, isouter=True)
+        .join(Production, Movies.id == Production.movie_id, isouter=True)
+        .filter(Movies.name.ilike(f'%{search_query}%'))
+        .group_by(Movies.id, Production.staff_name, Production.role)
+        .all()
+    )
+
+    # Organize search results into a dictionary for better handling in the template
+    organized_results = {}
+    for movie, avg_rating, member, role in search_results:
+        if movie.id not in organized_results:
+            organized_results[movie.id] = {
+                'movie': movie,
+                'avg_rating': avg_rating,
+                'production_members': []
+            }
+        if member:
+            organized_results[movie.id]['production_members'].append((member, role))
+
+    return render_template('home.html', search_results=organized_results.values())
+@app.route('/movielist')
+def movielist():
+    # Fetch all movies from the database
+    all_movies = Movies.query.all()
+    return render_template('movielist.html', movies=all_movies)
 if __name__ == "__main__":
     app.run(debug=True)

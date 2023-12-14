@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movie List</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        header {
+            background-color: #333;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            width: 100%;
+        }
+
+        section {
+            width: 80%;
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+            width: 100%;
+        }
+
+        li {
+            margin-bottom: 10px;
+            padding: 10px;
+            background-color: #fff;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        a {
+            text-decoration: none;
+            color: #0066cc;
+        }
+
+        .filter-button {
+            margin-top: 20px;
+            padding: 10px;
+            font-size: 14px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Movie List</h1>
+    </header>
+
+    <section>
+        <!-- Filter buttons -->
+        <button class="filter-button" onclick="sortMovies('rating')">Sort by Average Rating</button>
+        <button class="filter-button" onclick="sortMovies('name')">Sort Alphabetically</button>
+        <h2>All Movies</h2>
+        <ul>
+            {% for movie in movies %}
+                <li>
+                    <a href="{{ movie.link }}" target="_blank">{{ movie.name }}</a>
+                </li>
+            {% endfor %}
+        </ul>
+    </section>
+
+    <script>
+        function sortMovies(sortBy) {
+            // Fetch the list of movies
+            var moviesList = document.querySelector('ul');
+    
+            // Convert the list to an array for sorting
+            var moviesArray = Array.from(moviesList.children);
+    
+            // Store the original order of movies before sorting
+            moviesArray.forEach(function (movie, index) {
+                movie.setAttribute('data-original-order', index);
+            });
+    
+            // Sort the array based on the selected criteria
+            if (sortBy === 'rating') {
+                moviesArray.sort(function (a, b) {
+                    var ratingA = parseFloat(a.querySelector('.avg-rating').textContent.match(/\d+/)[0]);
+                    var ratingB = parseFloat(b.querySelector('.avg-rating').textContent.match(/\d+/)[0]);
+                    return ratingB - ratingA;
+                });
+            } else if (sortBy === 'name') {
+                moviesArray.sort(function (a, b) {
+                    var nameA = a.textContent.trim();
+                    var nameB = b.textContent.trim();
+                    return nameA.localeCompare(nameB);
+                });
+            }
+    
+            // Update the list with the sorted items
+            moviesList.innerHTML = ''; // Clear the current list
+            moviesArray.forEach(function (movie) {
+                moviesList.appendChild(movie);
+            });
+        }
+    </script>
+    
+</body>
+</html>

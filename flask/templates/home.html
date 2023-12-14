@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movie Search</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        header {
+            background-color: #333;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            width: 100%;
+        }
+
+        section {
+            width: 80%;
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #search-section {
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        #search-results-section {
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        h2 {
+            color: #333;
+        }
+
+        .search-result {
+            font-size: 18px;
+            margin-bottom: 20px;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .search-result img {
+            max-width: 80px;
+            border-radius: 5px;
+            margin-right: 20px;
+        }
+
+        form {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            width: 100%;
+            justify-content: center;
+        }
+
+        input, button {
+            padding: 10px;
+            font-size: 14px;
+            border: none;
+            border-radius: 5px;
+        }
+
+        input {
+            flex: 1;
+        }
+
+        button {
+            background-color: #333;
+            color: white;
+            cursor: pointer;
+        }
+
+        a {
+            text-decoration: none;
+            color: #0066cc;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+            width: 100%;
+        }
+
+        li {
+            margin-bottom: 10px;
+            padding: 10px;
+            background-color: #fff;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .movielist-button {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Movie Search</h1>
+    </header>
+
+    <section>
+        <div id="search-section">
+            <h2>Search for Movies</h2>
+            <form method="GET" action="{{ url_for('search') }}">
+                <input type="text" name="search_query" placeholder="Enter movie name" required>
+                <button type="submit">Search</button>
+            </form>
+        </div>
+
+        <!-- Display search results here -->
+        <section id="search-results-section">
+            <h2>Search Results</h2>
+            {% for movie_data in search_results %}
+                <div class="search-result">
+                    <div>
+                        <a href="{{ movie_data.movie.link }}" target="_blank">{{ movie_data.movie.name }}</a>
+                        <p>Average Rating: {{ movie_data.avg_rating }}</p>
+                    </div>
+                    {% if movie_data.production_members %}
+                        <aside>
+                            <h2>Production Members</h2>
+                            <ul>
+                                {% for member, role in movie_data.production_members %}
+                                    <li>{{ member }} - {{ role }}</li>
+                                {% endfor %}
+                            </ul>
+                        </aside>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </section>
+
+        <button id="movielistButton" class="movielist-button">
+            Display All Available Movies
+        </button>
+        
+        <script>
+            // Use an event listener to handle the button click
+            document.getElementById('movielistButton').addEventListener('click', function() {
+                // Redirect to the movielist route
+                window.location.href = '{{ url_for('movielist') }}';
+            });
+        </script>
+    </section>
+</body>
+</html>
